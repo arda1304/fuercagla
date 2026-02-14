@@ -1,0 +1,534 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>💗 Für Cagli 💗</title>
+<style>
+  :root { --pink:#ff4fa3; --bg1:#fff0f7; --bg2:#ffd1e8; }
+  * { box-sizing: border-box; }
+
+  body{
+    margin:0; height:100vh; overflow:hidden;
+    display:flex; justify-content:center; align-items:center;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    background: radial-gradient(circle at top, var(--bg1), var(--bg2));
+  }
+
+  .card{
+    width:min(560px, 92vw);
+    background: rgba(255,255,255,.88);
+    border: 2px solid rgba(255,79,163,.22);
+    border-radius: 22px;
+    padding: 28px 20px;
+    text-align:center;
+    box-shadow: 0 20px 60px rgba(0,0,0,.14);
+    backdrop-filter: blur(6px);
+    position: relative;
+  }
+
+  h1{ margin:0 0 8px; color:var(--pink); font-size:28px; }
+  p{ margin:10px 0; color:#333; line-height:1.45; }
+  .big{ font-size:18px; }
+
+  /* ✅ Buttons fest + immer sichtbar */
+  .btns{
+    margin-top:14px;
+    display:flex;
+    gap:12px;
+    justify-content:center;
+    flex-wrap:nowrap;
+  }
+
+  button{
+    border:0; border-radius:999px;
+    padding:12px 18px;
+    font-weight:700;
+    cursor:pointer;
+    font-size:15px;
+    transition: transform .08s ease;
+    user-select:none;
+    -webkit-tap-highlight-color: transparent;
+    min-width: 140px;
+  }
+  button:active{ transform:scale(.98); }
+
+  #yesBtn{ background:var(--pink); color:#fff; }
+  #noBtn{
+    background:#ffe1f1; color:#b0125f;
+    border: 2px solid rgba(255,79,163,.35);
+  }
+
+  .note{ margin-top:14px; font-size:14px; color:#666; }
+  .sig{ margin-top:10px; color:#b0125f; font-weight:700; }
+
+  /* hearts */
+  .hearts{ position:fixed; inset:0; pointer-events:none; }
+  .heart{
+    position:absolute;
+    animation: floatUp linear forwards;
+    filter: drop-shadow(0 10px 12px rgba(0,0,0,.12));
+  }
+  @keyframes floatUp{
+    from { transform: translateY(20px) scale(1); opacity:0; }
+    10% { opacity:.95; }
+    to { transform: translateY(-110vh) scale(1.35); opacity:0; }
+  }
+
+  /* toast (groß + lesbar) */
+  .toast{
+    position:fixed;
+    top:50%;
+    left:50%;
+    transform:translate(-50%, -50%);
+    background: white;
+    border: 3px solid #ff4fa3;
+    border-radius: 20px;
+    padding: 20px 30px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.25);
+    color: #ff4fa3;
+    font-size: 26px;
+    font-weight: 800;
+    text-align: center;
+    display:none;
+    animation: pop 0.25s ease;
+    z-index: 2000;
+  }
+  .toast.show{ display:block; }
+
+  @keyframes pop{
+    from { transform:translate(-50%, -50%) scale(0.8); opacity:0; }
+    to   { transform:translate(-50%, -50%) scale(1); opacity:1; }
+  }
+
+  /* overlay (Foto nach YES) */
+  .overlay{
+    position: fixed;
+    inset: 0;
+    display: none;
+    place-items: center;
+    background: rgba(0,0,0,.35);
+    backdrop-filter: blur(4px);
+    z-index: 9999;
+  }
+
+  .overlay.show{
+    display: grid;
+    animation: fadeIn .25s ease forwards;
+  }
+
+  @keyframes fadeIn{
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  .overlayCard{
+    width: min(720px, 92vw);
+    background: white;
+    border: 3px solid #ff4fa3;
+    border-radius: 24px;
+    padding: 16px 16px 18px;
+    box-shadow: 0 30px 80px rgba(0,0,0,.35);
+    transform: scale(.9);
+    opacity: 0;
+    animation: popCard .28s ease forwards;
+    text-align: center;
+  }
+
+  @keyframes popCard{
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  .overlayTitle{
+    font-weight: 900;
+    color: #ff4fa3;
+    font-size: 28px;
+    margin: 6px 0 10px;
+  }
+
+  .overlayImg{
+    width: 100%;
+    height: auto;
+    border-radius: 18px;
+    display: block;
+    border: 2px solid rgba(255,79,163,.25);
+  }
+
+  .overlayText{
+    margin-top: 10px;
+    color: #b0125f;
+    font-weight: 700;
+    font-size: 16px;
+  }
+
+  .overlayBtn{
+    margin-top: 12px;
+    background: #ff4fa3;
+    color: white;
+    border: 0;
+    border-radius: 999px;
+    padding: 10px 16px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  /* Mathe-Overlay bei NO */
+  .mathOverlay{
+    position: fixed;
+    inset: 0;
+    display: none;
+    place-items: center;
+    background: rgba(0,0,0,.35);
+    backdrop-filter: blur(4px);
+    z-index: 9998;
+  }
+  .mathOverlay.show{
+    display: grid;
+    animation: fadeIn .25s ease forwards;
+  }
+  .mathCard{
+    width: min(720px, 92vw);
+    background: white;
+    border: 3px solid #ff4fa3;
+    border-radius: 24px;
+    padding: 16px 16px 18px;
+    box-shadow: 0 30px 80px rgba(0,0,0,.35);
+    transform: scale(.9);
+    opacity: 0;
+    animation: popCard .28s ease forwards;
+    text-align: center;
+  }
+  .mathTitle{
+    font-weight: 900;
+    color: #ff4fa3;
+    font-size: 24px;
+    margin: 6px 0 10px;
+  }
+  .mathTask{
+    font-size: 20px;
+    font-weight: 800;
+    color: #b0125f;
+    margin: 10px 0 6px;
+  }
+  .mathHint{
+    font-size: 14px;
+    color: #666;
+    margin: 6px 0 12px;
+  }
+  .mathRow{
+    display:flex;
+    gap:10px;
+    justify-content:center;
+    align-items:center;
+    flex-wrap:wrap;
+  }
+  .mathInput{
+    width: min(240px, 70vw);
+    border: 2px solid rgba(255,79,163,.35);
+    border-radius: 999px;
+    padding: 12px 14px;
+    font-size: 18px;
+    font-weight: 800;
+    outline: none;
+    text-align: center;
+  }
+  .mathBtn{
+    background: #ff4fa3;
+    color: white;
+    border: 0;
+    border-radius: 999px;
+    padding: 12px 16px;
+    font-weight: 900;
+    cursor: pointer;
+  }
+  .mathBtn2{
+    background: #ffe1f1;
+    color: #b0125f;
+    border: 2px solid rgba(255,79,163,.35);
+    border-radius: 999px;
+    padding: 12px 16px;
+    font-weight: 900;
+    cursor: pointer;
+  }
+  .mathMsg{
+    margin-top: 10px;
+    font-weight: 800;
+    color: #ff4fa3;
+    min-height: 22px;
+  }
+</style>
+</head>
+
+<body>
+  <div class="hearts" id="hearts"></div>
+
+  <div class="card">
+    <h1>💗 Hey Cagli 💗</h1>
+    <p class="big">i love u so much</p>
+    <p>willst du mein valentinstagdate sein? bitte</p>
+
+    <div class="btns" id="btnArea">
+      <button id="yesBtn">yes 💖</button>
+      <button id="noBtn">no lass mich👎 creep</button>
+    </div>
+
+    <div class="note">klick mal irgendwo auf die pinke fläche</div>
+    <div class="sig">— Arda</div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- Overlay für Foto -->
+  <div class="overlay" id="overlay" aria-hidden="true">
+    <div class="overlayCard">
+      <div class="overlayTitle">ich liebe dich</div>
+      <img class="overlayImg" src="uns.jpg" alt="Cagli & Arda">
+      <div class="overlayText">ok thx</div>
+      <button class="overlayBtn" id="closeOverlay">close</button>
+    </div>
+  </div>
+
+  <!-- Mathe-Overlay -->
+  <div class="mathOverlay" id="mathOverlay" aria-hidden="true">
+    <div class="mathCard">
+      <div class="mathTitle">ok wenn du das richtig löst lasse ich dich</div>
+      <div class="mathTask" id="mathTask">…</div>
+      <div class="mathHint">gib nur das endergebnis ein (zahl)</div>
+      <div class="mathRow">
+        <input class="mathInput" id="mathInput" inputmode="numeric" placeholder="z.B. 20 oder 30 oder 40">
+        <button class="mathBtn" id="mathSubmit">ok</button>
+        <button class="mathBtn2" id="mathCancel">zurück</button>
+      </div>
+      <div class="mathMsg" id="mathMsg"></div>
+    </div>
+  </div>
+
+  <!-- 🎵 Audio (MP3) -->
+  <audio id="loveSong" preload="auto">
+    <source src="song.mp3" type="audio/mpeg">
+  </audio>
+
+<script>
+  const hearts = document.getElementById("hearts");
+  const toast  = document.getElementById("toast");
+  const yesBtn = document.getElementById("yesBtn");
+  const noBtn  = document.getElementById("noBtn");
+
+  // Overlay refs
+  const overlay = document.getElementById("overlay");
+  const closeOverlay = document.getElementById("closeOverlay");
+
+  // 🎵 Audio ref
+  const loveSong = document.getElementById("loveSong");
+
+  function showOverlay(){
+    overlay.classList.add("show");
+    overlay.setAttribute("aria-hidden", "false");
+
+    // 🎵 Musik starten
+    try{
+      loveSong.currentTime = 0;
+      loveSong.play();
+    }catch(e){}
+  }
+
+  function hideOverlay(){
+    overlay.classList.remove("show");
+    overlay.setAttribute("aria-hidden", "true");
+
+    // 🛑 Musik stoppen
+    try{
+      loveSong.pause();
+      loveSong.currentTime = 0;
+    }catch(e){}
+  }
+
+  closeOverlay.addEventListener("click", (e)=>{
+    e.stopPropagation();
+    hideOverlay();
+  });
+
+  overlay.addEventListener("click", (e)=>{
+    if(e.target === overlay) hideOverlay();
+  });
+
+  const heartChars = ["💗","💕","💖","💘","💝"];
+
+  function popToast(text){
+    toast.textContent = text;
+    toast.classList.add("show");
+    setTimeout(()=>toast.classList.remove("show"), 2500);
+  }
+
+  function spawnHeart(x = Math.random()*innerWidth, y = innerHeight+20){
+    const el = document.createElement("div");
+    el.className = "heart";
+    el.textContent = heartChars[Math.floor(Math.random()*heartChars.length)];
+    el.style.left = x + "px";
+    el.style.top = y + "px";
+    el.style.fontSize = (16 + Math.random()*22) + "px";
+    el.style.animationDuration = (3 + Math.random()*2.8) + "s";
+    hearts.appendChild(el);
+    setTimeout(()=>el.remove(), 6500);
+  }
+
+  function burst(n=50, x=Math.random()*innerWidth, y=innerHeight){
+    for(let i=0;i<n;i++){
+      setTimeout(()=>spawnHeart(x + (Math.random()*80-40), y + (Math.random()*40-20)), i*18);
+    }
+  }
+
+  // Ambient hearts
+  setInterval(()=>spawnHeart(Math.random()*innerWidth, innerHeight+20), 220);
+
+  // Click anywhere = hearts
+  document.addEventListener("click", (e)=>{
+    for(let i=0;i<10;i++){
+      spawnHeart(e.clientX + (Math.random()*50-25), e.clientY + (Math.random()*50-25));
+    }
+  });
+
+  // YES
+  yesBtn.addEventListener("click", (e)=>{
+    e.stopPropagation();
+    burst(90, innerWidth*0.5, innerHeight*0.6);
+    popToast("sag mir nur noch wann du Zeit hast 🌸");
+    showOverlay();
+    
+  });
+
+  // NO prompts
+  const noPrompts = [
+    "Sicher? ",
+    "Wirklich wirklich? ",
+    "Bist du dir GANZ sicher? ",
+    "Letzte Chance… ganz sicher? ",
+    "okay… aber ich frage nochmal. sicher? 💗"
+  ];
+  let noCount = 0;
+
+  /* Mathe-Aufgaben als ganze Sätze */
+  const mathProblems = [
+    { task: "1) Berechne den Wert von 5 · (6 − 2).", ans: 20 },
+    { task: "2) Berechne 3² + 4².", ans: 25 },
+    { task: "3) Berechne √81 + 7.", ans: 16 },
+    { task: "4) Berechne 48 : 6 + 5.", ans: 13 },
+    { task: "5) Berechne 0,5 · 60.", ans: 30 },
+    { task: "6) Berechne 7² − 9.", ans: 40 },
+    { task: "7) Berechne 90 : (5 + 4).", ans: 10 },
+    { task: "8) Berechne 25% von 80.", ans: 20 },
+    { task: "9) Ein Rechteck hat die Seitenlängen 7 und 6. Wie groß ist seine Fläche?", ans: 42 },
+    { task: "10) Du fährst 150 km in 5 Stunden. Wie groß ist die Durchschnittsgeschwindigkeit (km/h)?", ans: 30 }
+  ];
+
+  const mathOverlay = document.getElementById("mathOverlay");
+  const mathTaskEl = document.getElementById("mathTask");
+  const mathInput = document.getElementById("mathInput");
+  const mathSubmit = document.getElementById("mathSubmit");
+  const mathCancel = document.getElementById("mathCancel");
+  const mathMsg = document.getElementById("mathMsg");
+
+  let currentMath = null;
+  let mathOpen = false;
+
+  function openMath(){
+    currentMath = mathProblems[Math.floor(Math.random() * mathProblems.length)];
+    mathTaskEl.textContent = currentMath.task;
+    mathMsg.textContent = "";
+    mathInput.value = "";
+    mathOverlay.classList.add("show");
+    mathOverlay.setAttribute("aria-hidden", "false");
+    mathOpen = true;
+    setTimeout(()=> mathInput.focus(), 50);
+  }
+
+  function closeMath(){
+    mathOverlay.classList.remove("show");
+    mathOverlay.setAttribute("aria-hidden", "true");
+    mathOpen = false;
+    currentMath = null;
+  }
+
+  function normalizeNum(str){
+    return str.trim().replace(",", ".");
+  }
+
+  function proceedNoAfterMath(){
+    const msg = noPrompts[Math.min(noCount, noPrompts.length-1)];
+    noCount++;
+
+    burst(25, innerWidth*0.55, innerHeight*0.6);
+    popToast(msg);
+
+    // ✅ Nach 5x NO: Buttons bleiben fix, werden nur umbenannt
+    if(noCount >= 5){
+      yesBtn.textContent = "Ja";
+      noBtn.textContent = "Ja ok...";
+    }
+
+    // Optional wie vorher: nach 6x automatisch ja
+    if(noCount >= 6){
+      yesBtn.click();
+    }
+  }
+
+  function checkMath(){
+    if(!currentMath) return;
+
+    const raw = normalizeNum(mathInput.value);
+    if(raw === ""){
+      mathMsg.textContent = "gib was ein 🙄";
+      return;
+    }
+
+    const val = Number(raw);
+    if(Number.isNaN(val)){
+      mathMsg.textContent = "das ist keine zahl 😭";
+      return;
+    }
+
+    if(val === currentMath.ans){
+      mathMsg.textContent = "ok… richtig 😌";
+      setTimeout(()=>{
+        closeMath();
+        proceedNoAfterMath();
+      }, 450);
+    } else {
+      mathMsg.textContent = "nope. nochmal ";
+      mathInput.select();
+      mathInput.focus();
+    }
+  }
+
+  mathSubmit.addEventListener("click", (e)=>{
+    e.stopPropagation();
+    checkMath();
+  });
+
+  mathCancel.addEventListener("click", (e)=>{
+    e.stopPropagation();
+    closeMath();
+  });
+
+  mathInput.addEventListener("keydown", (e)=>{
+    if(e.key === "Enter"){
+      e.preventDefault();
+      checkMath();
+    }
+  });
+
+  // Klick auf dunklen Bereich schließt NICHT (kein cheaten)
+  mathOverlay.addEventListener("click", (e)=>{
+    e.stopPropagation();
+  });
+
+  function handleNo(e){
+    e.stopPropagation();
+    if(mathOpen) return;
+    openMath();
+  }
+
+  noBtn.addEventListener("click", handleNo);
+</script>
+</body>
+</html>
